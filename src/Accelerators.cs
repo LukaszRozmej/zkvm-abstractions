@@ -66,7 +66,7 @@ public static partial class Accelerators
     /// Performs BLS12-381 G1 multi-scalar multiplication.
     /// </summary>
     /// <param name="pairs">The array of point-scalar pairs.</param>
-    /// <param name="numPairs">The Number of point-scalar pairs.</param>
+    /// <param name="numPairs">The number of point-scalar pairs.</param>
     /// <param name="result">The resulting point.</param>
     /// <returns>The status of the operation.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The <c>pairs</c> must be <c>128 * numPairs</c> bytes long.</exception>
@@ -105,7 +105,7 @@ public static partial class Accelerators
     /// Performs BLS12-381 G2 multi-scalar multiplication.
     /// </summary>
     /// <param name="pairs">The array of point-scalar pairs.</param>
-    /// <param name="numPairs">The Number of point-scalar pairs.</param>
+    /// <param name="numPairs">The number of point-scalar pairs.</param>
     /// <param name="result">The resulting point.</param>
     /// <returns>The status of the operation.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The <c>pairs</c> must be <c>224 * numPairs</c> bytes long.</exception>
@@ -393,9 +393,7 @@ public static partial class Accelerators
     /// Computes the hash of data using the SHA-256 algorithm.
     /// </summary>
     /// <param name="data">The data to hash.</param>
-    /// <param name="output">The buffer to receive the hash value:
-    /// first 20 bytes contain the hash; remaining 12 bytes are zero-filled.
-    /// </param>
+    /// <param name="output">The buffer to receive the hash value.</param>
     /// <exception cref="ArgumentOutOfRangeException">The <c>output</c> must be 32 bytes long.</exception>
     /// <exception cref="CryptographicException">Operation failed.</exception>
     public static void Sha256(ReadOnlySpan<byte> data, Span<byte> output)
@@ -439,7 +437,7 @@ public static partial class Accelerators
     /// Performs the Keccak-f[1600] permutation on the given state.
     /// </summary>
     /// <param name="state">The state buffer.</param>
-    /// <exception cref="ArgumentOutOfRangeException">State buffer must be 25 bytes long.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The <c>state</c> must be 25 elements long.</exception>
     public static void KeccakF(Span<ulong> state)
     {
         ArgumentOutOfRangeException.ThrowIfNotEqual(state.Length, 25, nameof(state));
