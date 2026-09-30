@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Demerzel Solutions Limited
 // SPDX-License-Identifier: MIT
 
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace Nethermind.Zkvm.Abstractions;
@@ -447,6 +448,16 @@ public static partial class Accelerators
     }
 
     /// <summary>
+    /// Performs the Keccak-f[1600] permutation in place on the 25 lanes starting at <paramref name="state"/>.
+    /// </summary>
+    /// <param name="state">The first of 25 contiguous state lanes.</param>
+    /// <remarks>
+    /// Unchecked counterpart of <see cref="KeccakF(Span{ulong})"/> for absorb loops that already hold the state:
+    /// the caller guarantees 25 lanes are addressable from <paramref name="state"/>.
+    /// </remarks>
+    public static void KeccakF(ref ulong state) => syscall_keccak_f(ref state);
+
+    /// <summary>
     /// Computes <c>(a * b) mod modulus</c> for 256-bit integers, with the product taken over 512 bits.
     /// </summary>
     /// <param name="a">The multiplicand.</param>
@@ -472,6 +483,24 @@ public static partial class Accelerators
     /// <remarks><inheritdoc cref="MulMod256" path="/remarks"/></remarks>
     public static unsafe void ReduceMod256(ulong* a, ulong* modulus, ulong* result) =>
         reduce_mod256_c(a, modulus, result);
+
+    /// <summary>
+    /// Performs the SHA-256 compression function on a state and one 64-byte block.
+    /// </summary>
+    /// <param name="state">The eight 32-bit state words, as four 64-bit lanes with the lower-indexed word in the low half.</param>
+    /// <param name="block">The message block, as its 64 bytes in order.</param>
+    /// <remarks>
+    /// Both pointers must be 8-byte aligned, and <paramref name="block"/> may not overlap <paramref name="state"/>.
+    /// Padding the message is up to the caller. Unchecked, like <see cref="KeccakF(ref ulong)"/>, as merkleization
+    /// runs it twice per node.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Sha256F(ulong* state, ulong* block)
+    {
+        Sha256FParameters parameters = new() { State = state, Block = block };
+
+        syscall_sha256_f(&parameters);
+    }
 #endif
 
     private static void ThrowIfFailed(Status status, string methodName)
