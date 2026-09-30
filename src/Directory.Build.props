@@ -9,6 +9,11 @@
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
+  <PropertyGroup Label="CodeAnalysis">
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
   <PropertyGroup Label="ProductInfo">
     <Authors>Nethermind</Authors>
     <Copyright>Demerzel Solutions Limited</Copyright>

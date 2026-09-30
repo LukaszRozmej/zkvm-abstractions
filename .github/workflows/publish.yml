@@ -22,7 +22,7 @@ jobs:
       contents: read
       id-token: write
     env:
-      NUGET_HOST: ${{ github.event.inputs.feed == 'Staging' && 'https://int.nugettest.org' || 'https://www.nuget.org' }}
+      NUGET_HOST: ${{ inputs.feed == 'Staging' && 'https://int.nugettest.org' || 'https://www.nuget.org' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
