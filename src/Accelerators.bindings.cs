@@ -175,16 +175,6 @@ public static partial class Accelerators
     [SuppressGCTransition]
     private static unsafe partial void syscall_sha256_f(Sha256FParameters* parameters);
 
-    /// <summary>
-    /// The operand block <c>syscall_sha256_f</c> reads through its single pointer argument.
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    private unsafe struct Sha256FParameters
-    {
-        public ulong* State;
-        public ulong* Block;
-    }
-
     // ZisK's 256-bit arithmetic on its arith256 precompiles, which the zkVM standards do not cover.
     [LibraryImport("__Internal")]
     [SuppressGCTransition]
