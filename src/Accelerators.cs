@@ -463,7 +463,8 @@ public static partial class Accelerators
     /// <param name="destination">The buffer to receive them.</param>
     /// <remarks>
     /// Calls ZisK's <c>memmove</c> precompile directly. Corelib's span copy reaches the same routine for longer runs,
-    /// but through a wrapper that spills every callee-saved register.
+    /// but through a wrapper that spills every callee-saved register. The spans are not pinned: the import suppresses
+    /// the GC transition, so no GC can run between taking their addresses and the call returning.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">The <c>destination</c> must be at least as long as <c>source</c>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -471,8 +472,44 @@ public static partial class Accelerators
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(source.Length, destination.Length, nameof(source));
 
-        memmove(ref MemoryMarshal.GetReference(destination), in MemoryMarshal.GetReference(source), (nuint)source.Length);
+        unsafe
+        {
+            memmove(
+                Unsafe.AsPointer(ref MemoryMarshal.GetReference(destination)),
+                Unsafe.AsPointer(ref MemoryMarshal.GetReference(source)),
+                (nuint)source.Length);
+        }
     }
+
+    /// <summary>
+    /// Copies <paramref name="length"/> bytes from <paramref name="source"/> to <paramref name="destination"/>;
+    /// the two may overlap.
+    /// </summary>
+    /// <param name="destination">The buffer to receive the bytes.</param>
+    /// <param name="source">The bytes to copy.</param>
+    /// <param name="length">The number of bytes to copy.</param>
+    /// <remarks>
+    /// Unchecked counterpart of <see cref="Memmove(ReadOnlySpan{byte}, Span{byte})"/> for hot paths: the caller
+    /// guarantees both buffers hold <paramref name="length"/> bytes, and that pointers into managed memory stay
+    /// valid until the call returns. Raw pointers skip the stub that pins <c>ref</c> arguments in a stack frame.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Memmove(void* destination, void* source, nuint length) =>
+        memmove(destination, source, length);
+
+    /// <summary>
+    /// Sets <paramref name="length"/> bytes at <paramref name="destination"/> to <paramref name="value"/>.
+    /// </summary>
+    /// <param name="destination">The buffer to fill.</param>
+    /// <param name="value">The byte to fill it with.</param>
+    /// <param name="length">The number of bytes to fill.</param>
+    /// <remarks>
+    /// Calls ZisK's <c>memset</c> precompile directly. Unchecked, with the caller's contract of
+    /// <see cref="Memmove(void*, void*, nuint)"/>.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Memset(void* destination, byte value, nuint length) =>
+        memset(destination, value, length);
 
     /// <summary>
     /// Computes <c>(a * b) mod modulus</c> for 256-bit integers, with the product taken over 512 bits.
@@ -517,6 +554,31 @@ public static partial class Accelerators
         Sha256FParameters parameters = new() { State = state, Block = block };
 
         syscall_sha256_f(&parameters);
+    }
+
+    /// <summary>
+    /// Performs the SHA-256 compression function on the state and block a parameter block points to.
+    /// </summary>
+    /// <param name="parameters">The parameter block. It is only read, so a caller may reuse it across calls.</param>
+    /// <remarks>
+    /// The contract of <see cref="Sha256F(ulong*, ulong*)"/> applies to the pointers in <paramref name="parameters"/>.
+    /// For callers that compress several blocks into one state: they keep one parameter block and rewrite only
+    /// <see cref="Sha256FParameters.Block"/> between calls, rather than have each call fill a fresh one.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Sha256F(Sha256FParameters* parameters) => syscall_sha256_f(parameters);
+
+    /// <summary>
+    /// The operand block ZisK's SHA-256 compression precompile reads through its single pointer argument.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct Sha256FParameters
+    {
+        /// <summary>The state, as described on <see cref="Sha256F(ulong*, ulong*)"/>.</summary>
+        public ulong* State;
+
+        /// <summary>The message block, as described on <see cref="Sha256F(ulong*, ulong*)"/>.</summary>
+        public ulong* Block;
     }
 #endif
 
