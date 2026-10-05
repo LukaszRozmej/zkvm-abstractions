@@ -463,7 +463,8 @@ public static partial class Accelerators
     /// <param name="destination">The buffer to receive them.</param>
     /// <remarks>
     /// Calls ZisK's <c>memmove</c> precompile directly. Corelib's span copy reaches the same routine for longer runs,
-    /// but through a wrapper that spills every callee-saved register.
+    /// but through a wrapper that spills every callee-saved register. The spans are not pinned: the import suppresses
+    /// the GC transition, so no GC can run between taking their addresses and the call returning.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">The <c>destination</c> must be at least as long as <c>source</c>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -471,7 +472,13 @@ public static partial class Accelerators
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(source.Length, destination.Length, nameof(source));
 
-        memmove(ref MemoryMarshal.GetReference(destination), in MemoryMarshal.GetReference(source), (nuint)source.Length);
+        unsafe
+        {
+            memmove(
+                Unsafe.AsPointer(ref MemoryMarshal.GetReference(destination)),
+                Unsafe.AsPointer(ref MemoryMarshal.GetReference(source)),
+                (nuint)source.Length);
+        }
     }
 
     /// <summary>
