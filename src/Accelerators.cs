@@ -664,6 +664,57 @@ public static partial class Accelerators
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void OpenVmSha256Compress(ulong* state, ulong* input, ulong* output) => zkvm_sha256_compress(state, input, output);
+
+    /// <summary>
+    /// Computes the full 512-bit product <c>x * y</c>.
+    /// </summary>
+    /// <param name="x">The multiplicand.</param>
+    /// <param name="y">The multiplier.</param>
+    /// <param name="product">The buffer to receive the product, as eight 64-bit limbs.</param>
+    /// <remarks>
+    /// A plain RV64IM routine on <c>MULHU</c>, which managed code cannot reach on this target. Operands are four
+    /// 64-bit limbs, least significant first. Unchecked for hot paths: the caller guarantees 32 bytes at
+    /// <paramref name="x"/> and <paramref name="y"/> and 64 at <paramref name="product"/>, 8-byte aligned. Both
+    /// operands are read before the product is written, so <paramref name="product"/> may alias either.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void UInt256MulWide(ulong* x, ulong* y, ulong* product) => zkvm_u256_mul_wide(x, y, product);
+
+    /// <summary>
+    /// Asks the runner for the quotient and remainder of <paramref name="numerator"/> divided by <paramref name="divisor"/>.
+    /// </summary>
+    /// <param name="numerator">The 512-bit dividend, as eight 64-bit limbs.</param>
+    /// <param name="divisor">The 256-bit divisor, as four 64-bit limbs.</param>
+    /// <param name="quotientRemainder">The buffer to receive the quotient, truncated to 256 bits, then the remainder.</param>
+    /// <remarks>
+    /// A phantom instruction that only the bflat-openvm runner registers; any other runner traps on it. The result
+    /// is untrusted: accept it only once <see cref="UInt512IsDivRem"/> returns <see langword="true"/>. Limbs are
+    /// least significant first. Unchecked for hot paths: the caller guarantees the buffer sizes, 8-byte aligned.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void UInt512DivRemHint(ulong* numerator, ulong* divisor, ulong* quotientRemainder) =>
+        zkvm_u512_divrem_hint(numerator, divisor, quotientRemainder);
+
+    /// <summary>
+    /// Checks that <paramref name="quotient"/> and <paramref name="remainder"/> are those of
+    /// <paramref name="numerator"/> divided by <paramref name="divisor"/>.
+    /// </summary>
+    /// <param name="numerator">The 512-bit dividend, as eight 64-bit limbs.</param>
+    /// <param name="divisor">The 256-bit divisor, as four 64-bit limbs.</param>
+    /// <param name="quotient">The claimed quotient, as four 64-bit limbs.</param>
+    /// <param name="remainder">The claimed remainder, as four 64-bit limbs.</param>
+    /// <returns>
+    /// <see langword="true"/> if <c>quotient * divisor + remainder</c> equals <paramref name="numerator"/> over all
+    /// 512 bits and <c>remainder &lt; divisor</c>, which pins both values.
+    /// </returns>
+    /// <remarks>
+    /// A plain RV64IM routine, proven like any other guest code. A true quotient of 2^256 or more never passes, so the
+    /// caller falls back to software when one is possible. Limbs are least significant first. Unchecked for hot
+    /// paths: the caller guarantees the buffer sizes, 8-byte aligned.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe bool UInt512IsDivRem(ulong* numerator, ulong* divisor, ulong* quotient, ulong* remainder) =>
+        zkvm_u512_is_divrem(numerator, divisor, quotient, remainder) != 0;
 #endif
 
     private static void ThrowIfFailed(Status status, string methodName)

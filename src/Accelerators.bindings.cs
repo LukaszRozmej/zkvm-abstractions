@@ -232,5 +232,18 @@ public static partial class Accelerators
     [LibraryImport("__Internal")]
     [SuppressGCTransition]
     private static unsafe partial void zkvm_sha256_compress(ulong* state, ulong* input, ulong* output);
+
+    // bflat-openvm's division hint and the RV64IM routines that check it.
+    [LibraryImport("__Internal")]
+    [SuppressGCTransition]
+    private static unsafe partial void zkvm_u256_mul_wide(ulong* x, ulong* y, ulong* product);
+
+    [LibraryImport("__Internal")]
+    [SuppressGCTransition]
+    private static unsafe partial void zkvm_u512_divrem_hint(ulong* numerator, ulong* divisor, ulong* quotient_remainder);
+
+    [LibraryImport("__Internal")]
+    [SuppressGCTransition]
+    private static unsafe partial int zkvm_u512_is_divrem(ulong* numerator, ulong* divisor, ulong* quotient, ulong* remainder);
 #endif
 }
