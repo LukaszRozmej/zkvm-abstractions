@@ -40,8 +40,8 @@ public static partial class Accelerators
     [SuppressGCTransition]
     private static unsafe partial void reduce_mod256_c(ulong* a, ulong* modulus, ulong* result);
 
-    // ZisK runs the C library's memmove and memset as DMA precompiles. Pointers rather than refs: ref arguments
-    // make the stub pin them in a stack frame.
+    // ZisK runs the C library's memmove, memset and memcmp as DMA precompiles. Pointers rather than refs:
+    // ref arguments make the stub pin them in a stack frame.
     [LibraryImport("__Internal")]
     [SuppressGCTransition]
     private static unsafe partial void* memmove(void* dest, void* src, nuint n);
@@ -49,5 +49,9 @@ public static partial class Accelerators
     [LibraryImport("__Internal")]
     [SuppressGCTransition]
     private static unsafe partial void* memset(void* s, int c, nuint n);
+
+    [LibraryImport("__Internal")]
+    [SuppressGCTransition]
+    private static unsafe partial int memcmp(void* s1, void* s2, nuint n);
 }
 #endif
