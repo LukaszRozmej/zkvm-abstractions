@@ -23,6 +23,21 @@ public static partial class Accelerators
     [SuppressGCTransition]
     private static unsafe partial void syscall_sha256_f(Sha256FParameters* parameters);
 
+    // ZisK's 256-bit arithmetic precompiles themselves. Each takes the address of its operand block, which a JIT
+    // that lists the import in JitZkCsrPInvokes emits as the CSR write rather than a call.
+    [LibraryImport("__Internal")]
+    [SuppressGCTransition]
+    private static unsafe partial void syscall_arith256(Arith256Parameters* parameters);
+
+    [LibraryImport("__Internal")]
+    [SuppressGCTransition]
+    private static unsafe partial void syscall_arith256_mod(Arith256ModParameters* parameters);
+
+    // ZisK's EVM JUMPDEST bitmap precompile, a csrs/add pair the transpiler fuses only while they are adjacent.
+    [LibraryImport("__Internal")]
+    [SuppressGCTransition]
+    private static unsafe partial void zkvm_jump_dest_bitmap(ulong* bitmap, byte* code, nuint length);
+
     // ZisK's 256-bit arithmetic on its arith256 precompiles, which the zkVM standards do not cover.
     [LibraryImport("__Internal")]
     [SuppressGCTransition]
