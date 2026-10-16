@@ -22,6 +22,8 @@ Building with `-p:Zisk=true` adds APIs not covered by the standards, backed by [
 - `Accelerators.Sha256F`: SHA-256 compression of one block, also through a reusable `Sha256FParameters` block.
 - `Accelerators.Memmove` and `Memset`: direct calls to the `memmove` and `memset` precompiles, skipping corelib's wrapper.
 - `Accelerators.AddMod256`, `MulMod256`, `ReduceMod256` and `DivRem256`: 256-bit modular arithmetic and division.
+- `Accelerators.Arith256` and `Arith256Mod`: the `arith256` and `arith256_mod` precompiles themselves, `a * b + c` and `(a * b + c) mod m`, also through reusable `Arith256Parameters` and `Arith256ModParameters` blocks.
+- `Accelerators.JumpDestBitmap`: the EVM JUMPDEST bitmap precompile.
 - `IO.PrintLine`: writes to the standard output ([eth-act/zkvm-standards#21](https://github.com/eth-act/zkvm-standards/issues/21)). Without ZisK, it throws `NotImplementedException`.
 
 The pointer- and `ref`-based methods are unchecked for hot paths; the caller guarantees the buffer sizes, alignment and non-aliasing described in their docs. `DivRem256` never returns if the divisor is zero.
@@ -43,6 +45,11 @@ Building with `-p:OpenVM=true` adds unchecked APIs backed by [OpenVM](https://gi
 - `Accelerators.UInt256MulWide`, `UInt512DivRemHint` and `UInt512IsDivRem`: a 512-bit product, a quotient and remainder hinted by the runner, and the check that pins them. The hint is a phantom instruction that only the [bflat-openvm](https://github.com/NethermindEth/bflat-openvm) runner registers.
 
 SP1 and OpenVM both export `zkvm_sha256_compress`, with different arguments: `Sp1Sha256Compress` and `OpenVMSha256Compress` each link on both zkVMs but work only on their own.
+
+## Testing
+
+Run the host smoke tests with `dotnet run --project tests/Nethermind.Zkvm.Abstractions.SmokeTests.csproj -c release`.
+They require GCC to build a native call-counting stub and check that empty bytecode skips the ZisK JUMPDEST precompile while nonempty bytecode reaches it.
 
 ## Packaging
 
