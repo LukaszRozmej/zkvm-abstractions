@@ -10,6 +10,7 @@ C# bindings for the [zkVM Standards for Ethereum](https://github.com/eth-act/zkv
   - `Accelerators.<zkvm>.cs`, `Accelerators.bindings.<zkvm>.cs`: Non-standard accelerators and their bindings for one zkVM (`zisk`, `sp1`, `openvm`), each file wholly guarded by its `#if`.
 - [build.yml](./.github/workflows/build.yml): Builds with and without ZisK, SP1 and OpenVM support, treating warnings as errors.
 - [publish.yml](./.github/workflows/publish.yml): Publishes on NuGet with ZisK, SP1 and OpenVM support. Uses NuGet trusted publishing, so do not rename it.
+- [tests](./tests/): Host smoke tests with a GCC-built native stub; see README.md for the run command.
 
 ## Coding guidelines
 

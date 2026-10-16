@@ -135,7 +135,7 @@ public static partial class Accelerators
     /// </summary>
     /// <param name="bitmap">The bitmap, one bit per code byte, least significant bit first; a set bit is a JUMPDEST.</param>
     /// <param name="code">The code.</param>
-    /// <param name="length">The code's length in bytes.</param>
+    /// <param name="length">The code's length in bytes. Zero leaves the bitmap untouched without accessing either pointer.</param>
     /// <remarks>
     /// Runs ZisK's JUMPDEST bitmap precompile. Both pointers must be 8-byte aligned; the precompile reads and
     /// writes whole words, so it may read up to seven bytes past the code. A JIT that lists
@@ -143,8 +143,14 @@ public static partial class Accelerators
     /// after it in place of the call.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void JumpDestBitmap(ulong* bitmap, byte* code, nuint length) =>
+    public static unsafe void JumpDestBitmap(ulong* bitmap, byte* code, nuint length)
+    {
+        // ZisK cannot prove a zero-length bitmap operation.
+        if (length == 0)
+            return;
+
         zkvm_jump_dest_bitmap(bitmap, code, length);
+    }
 
     /// <summary>
     /// Copies <paramref name="source"/> to the start of <paramref name="destination"/>; the two may overlap.

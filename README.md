@@ -46,6 +46,11 @@ Building with `-p:OpenVM=true` adds unchecked APIs backed by [OpenVM](https://gi
 
 SP1 and OpenVM both export `zkvm_sha256_compress`, with different arguments: `Sp1Sha256Compress` and `OpenVMSha256Compress` each link on both zkVMs but work only on their own.
 
+## Testing
+
+Run the host smoke tests with `dotnet run --project tests/Nethermind.Zkvm.Abstractions.SmokeTests.csproj -c release`.
+They require GCC to build a native call-counting stub and check that empty bytecode skips the ZisK JUMPDEST precompile while nonempty bytecode reaches it.
+
 ## Packaging
 
 The published package is built with ZisK, SP1 and OpenVM support, so these APIs are visible to every consumer but work only on their zkVM. A guest links only the imports its code reaches, so one that never calls another zkVM's API links fine.
