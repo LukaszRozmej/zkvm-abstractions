@@ -265,9 +265,7 @@ public static partial class Accelerators
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void Sha256F(ulong* state, ulong* block)
     {
-        Sha256FParameters parameters = new() { State = state, Block = block };
-
-        syscall_sha256_f(&parameters);
+        syscall_sha256_f(state, block);
     }
 
     /// <summary>
@@ -280,7 +278,8 @@ public static partial class Accelerators
     /// <see cref="Sha256FParameters.Block"/> between calls, rather than have each call fill a fresh one.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Sha256F(Sha256FParameters* parameters) => syscall_sha256_f(parameters);
+    public static unsafe void Sha256F(Sha256FParameters* parameters) =>
+        syscall_sha256_f(parameters->State, parameters->Block);
 
     /// <summary>
     /// The operand block ZisK's <c>arith256</c> precompile reads through its single pointer argument.
@@ -327,7 +326,7 @@ public static partial class Accelerators
     }
 
     /// <summary>
-    /// The operand block ZisK's SHA-256 compression precompile reads through its single pointer argument.
+    /// The state and block pointers of one SHA-256 compression, kept together for callers that compress several blocks.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct Sha256FParameters

@@ -21,7 +21,7 @@ public static partial class Accelerators
 
     [LibraryImport("__Internal")]
     [SuppressGCTransition]
-    private static unsafe partial void syscall_sha256_f(Sha256FParameters* parameters);
+    private static unsafe partial void syscall_sha256_f(ulong* state, ulong* block);
 
     // ZisK's 256-bit arithmetic precompiles themselves. Each takes the address of its operand block, which a JIT
     // that lists the import in JitZkCsrPInvokes emits as the CSR write rather than a call.
